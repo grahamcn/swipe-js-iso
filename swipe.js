@@ -34,7 +34,7 @@
     // quit if no root element
     if (!container) return;
     var element = container.children[0];
-    var slides, slidePos, width, length;
+    var slides, slidePos, width, length, slideChildrenWidth;
     options = options || {};
     var index = parseInt(options.startSlide, 10) || 0;
     var speed = options.speed || 300;
@@ -59,6 +59,9 @@
       // create an array to store current positions of each slide
       slidePos = new Array(slides.length);
 
+      // create an array to store the width of each slide
+      slideChildrenWidth = new Array(slides.length);
+
       // determine width of each slide
       width = container.getBoundingClientRect().width || container.offsetWidth;
 
@@ -69,6 +72,12 @@
       while(pos--) {
 
         var slide = slides[pos];
+
+        slideChildrenWidth[pos] = 0;
+
+        for (var i = 0; i < slide.children.length; i++) {
+          slideChildrenWidth[pos] += slide.children[i].offsetWidth;
+        }
 
         slide.style.width = width + 'px';
         slide.setAttribute('data-index', pos);
@@ -387,6 +396,15 @@
               index = circle(index+1);
 
             } else {
+               if (width < slideChildrenWidth[index]) {
+                if (!direction && slidePos[index] !== 0) {
+                  move(index-1, -width, speed);
+                  move(index, 0, speed);
+                  move(index+1, width, speed);
+                  return;
+                }
+              }
+
               if (options.continuous) { // we need to get the next in this direction in place
 
                 move(circle(index+1), width, 0);
@@ -413,6 +431,19 @@
               move(circle(index+1), width, speed);
 
             } else {
+
+              if (width < slideChildrenWidth[index]) {
+                if (direction) {
+                  move(index-1, -width - slideChildrenWidth[index], speed);
+                  move(index, (slideChildrenWidth[index] - width) * - 1, speed);
+                  move(index+1, width, speed);
+                } else {
+                  move(index-1, -width, speed);
+                  move(index, 0, speed);
+                  move(index+1, width, speed);
+                }
+                return;
+              }
 
               move(index-1, -width, speed);
               move(index, 0, speed);
