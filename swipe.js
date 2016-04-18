@@ -69,14 +69,22 @@
 
       // stack elements
       var pos = slides.length;
-      while(pos--) {
 
+      while(pos--) {
         var slide = slides[pos];
 
-        slideChildrenWidth[pos] = 0;
-
-        for (var i = 0; i < slide.children.length; i++) {
-          slideChildrenWidth[pos] += slide.children[i].offsetWidth;
+        // default value
+        slideChildrenWidth[pos] = width;
+        
+        // if a slide is specified as wider than default, we need to make some adjustments
+        // going forward.
+        if (options.slideMinimumWidths && options.slideMinimumWidths[pos]) {
+          if (options.slideMinimumWidths[pos] > width) {
+            // replace the width with the larger width
+            slideChildrenWidth[pos] = options.slideMinimumWidths[pos];
+            // bump the total width by the difference
+            element.style.width = options.slideMinimumWidths[pos];
+          }
         }
 
         slide.style.width = width + 'px';
@@ -343,12 +351,13 @@
                 ) ?
                 ( Math.abs(delta.x) / width + 1 )      // determine resistance level
                 : 1 );                                 // no resistance if false
-
+           
             // translate 1:1
             translate(index-1, delta.x + slidePos[index-1], 0);
             translate(index, delta.x + slidePos[index], 0);
             translate(index+1, delta.x + slidePos[index+1], 0);
           }
+
           options.swiping && options.swiping(-delta.x / width);
 
         }
